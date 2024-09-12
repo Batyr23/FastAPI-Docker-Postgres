@@ -22,6 +22,8 @@ class TpDictUpdate(TpDictBase):
 # Схема для возврата записи
 class TpDictOut(TpDictBase):
     id: int
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
     class Config:
         orm_mode = True

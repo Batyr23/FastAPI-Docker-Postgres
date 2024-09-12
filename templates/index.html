@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить запись</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-5">
+    <h1 class="mb-4">Добавить новую запись в TpDict</h1>
+
+    <form action="/add/" method="post" class="row g-3">
+        <div class="col-md-6">
+            <label for="tp_code" class="form-label">TP Code:</label>
+            <input type="number" class="form-control" id="tp_code" name="tp_code" required>
+        </div>
+        <div class="col-md-6">
+            <label for="tp_name" class="form-label">TP Name:</label>
+            <input type="text" class="form-control" id="tp_name" name="tp_name" required>
+        </div>
+        <div class="col-md-6">
+            <label for="tp_status" class="form-label">TP Status:</label>
+            <input type="text" class="form-control" id="tp_status" name="tp_status" required>
+        </div>
+        <div class="col-md-6">
+            <label for="is_commercial" class="form-label">Is Commercial:</label><br>
+            <input type="checkbox" class="form-check-input" id="is_commercial" name="is_commercial" value="true">
+            <label class="form-check-label" for="is_commercial">Commercial</label>
+        </div>
+        <div class="col-md-6">
+            <label for="valid_from" class="form-label">Valid From:</label>
+            <input type="date" class="form-control" id="valid_from" name="valid_from" required>
+        </div>
+        <div class="col-md-6">
+            <label for="valid_to" class="form-label">Valid To:</label>
+            <input type="date" class="form-control" id="valid_to" name="valid_to" required>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Добавить</button>
+        </div>
+    </form>
+
+    <div class="mt-4">
+        <a href="/tp_dicts_view/" class="btn btn-secondary">Просмотреть все записи</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

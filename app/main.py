@@ -1,41 +1,74 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Request, Depends, HTTPException, Form
 from sqlalchemy.orm import Session
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from . import crud, models, schemas, database
 
 app = FastAPI()
 
-# Создание всех таблиц в базе данных
+# Jinja2
+templates = Jinja2Templates(directory="templates")
+
+# Creation Tables in Database
 models.Base.metadata.create_all(bind=database.engine)
 
-# Корневой маршрут
+# Root path for index.html
 @app.get("/")
-async def root():
-    return {"message": "FastAPI CRUD App"}
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
-# Маршрут для создания новой записи
-@app.post("/tp_dicts/", response_model=schemas.TpDictCreate)
-def create_tp_dict(tp_dict: schemas.TpDictCreate, db: Session = Depends(database.get_db)):
-    return crud.create_tp_dict(db=db, tp_dict=tp_dict)
+# Обработка формы для добавления записи через данные формы
+@app.post("/add/")
+async def add_tp_dict(
+    tp_code: int = Form(...),
+    tp_name: str = Form(...),
+    tp_status: str = Form(...),
+    is_commercial: bool = Form(...),
+    valid_from: str = Form(...),
+    valid_to: str = Form(...),
+    db: Session = Depends(database.get_db)
+):
+    tp_dict_data = schemas.TpDictCreate(
+        tp_code=tp_code,
+        tp_name=tp_name,
+        tp_status=tp_status,
+        is_commercial=is_commercial,
+        valid_from=valid_from,
+        valid_to=valid_to
+    )
+    crud.create_tp_dict(db=db, tp_dict=tp_dict_data)
+    return RedirectResponse("/", status_code=303)
 
-# Маршрут для получения списка записей
-@app.get("/tp_dicts/", response_model=list[schemas.TpDictOut])
-def read_tp_dicts(skip: int = 0, limit: int = 10, db: Session = Depends(database.get_db)):
-    return crud.get_tp_dicts(db, skip=skip, limit=limit)
+# Просмотр всех записей с поддержкой удаления и обновления
+@app.get("/tp_dicts_view/")
+async def read_tp_dicts_view(request: Request, db: Session = Depends(database.get_db)):
+    tp_dicts = crud.get_tp_dicts(db)
+    return templates.TemplateResponse("tp_dicts.html", {"request": request, "tp_dicts": tp_dicts})
 
-# Маршрут для получения одной записи по tp_code
-@app.get("/tp_dicts/{tp_code}", response_model=schemas.TpDictOut)
-def read_tp_dict(tp_code: int, db: Session = Depends(database.get_db)):
-    db_tp_dict = crud.get_tp_dict(db, tp_code=tp_code)
-    if db_tp_dict is None:
-        raise HTTPException(status_code=404, detail="TpDict not found")
-    return db_tp_dict
+# Обработка удаления записи
+@app.post("/delete/{tp_code}")
+async def delete_tp_dict_view(tp_code: int, db: Session = Depends(database.get_db)):
+    crud.delete_tp_dict(db=db, tp_code=tp_code)
+    return RedirectResponse("/tp_dicts_view", status_code=303)
 
-# Маршрут для обновления записи
-@app.put("/tp_dicts/{tp_code}", response_model=schemas.TpDictOut)
-def update_tp_dict(tp_code: int, tp_dict: schemas.TpDictUpdate, db: Session = Depends(database.get_db)):
-    return crud.update_tp_dict(db=db, tp_code=tp_code, tp_dict=tp_dict)
-
-# Маршрут для удаления записи
-@app.delete("/tp_dicts/{tp_code}", response_model=schemas.TpDictOut)
-def delete_tp_dict(tp_code: int, db: Session = Depends(database.get_db)):
-    return crud.delete_tp_dict(db=db, tp_code=tp_code)
+# Обработка обновления записи через JSON & application/x-www-form-urlencoded
+@app.post("/update/{tp_code}")
+async def update_tp_dict_view(
+    tp_code: int,
+    tp_name: str = Form(...),
+    tp_status: str = Form(...),
+    is_commercial: bool = Form(...),
+    valid_from: str = Form(...),
+    valid_to: str = Form(...),
+    db: Session = Depends(database.get_db)
+):
+    tp_dict_data = schemas.TpDictUpdate(
+        tp_code=tp_code,
+        tp_name=tp_name,
+        tp_status=tp_status,
+        is_commercial=is_commercial,
+        valid_from=valid_from,
+        valid_to=valid_to
+    )
+    crud.update_tp_dict(db=db, tp_code=tp_code, tp_dict=tp_dict_data)
+    return RedirectResponse("/tp_dicts_view", status_code=303)

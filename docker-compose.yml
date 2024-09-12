@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  # База данных PostgreSQL
+  # PostgreSQL
   db:
     image: postgres:15
     restart: always
@@ -14,7 +14,7 @@ services:
     ports:
       - "5432:5432"
 
-  # FastAPI веб-приложение
+  # FastAPI
   web:
     build: .
     restart: always
