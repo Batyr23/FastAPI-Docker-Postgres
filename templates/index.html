@@ -3,12 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Добавить запись</title>
+    <title>Аналитика TpDict</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        canvas {
+            max-height: 300px;
+        }
+    </style>
 </head>
 <body class="container py-5">
-    <h1 class="mb-4">Добавить новую запись в TpDict</h1>
+    <h1 class="mb-4">Аналитика записей в TpDict</h1>
 
+    <!-- Здесь будут отображаться графики -->
+    <div class="row">
+        <div class="col-md-4 chart-container">
+            <h2>Общее количество записей</h2>
+            <canvas id="totalRecordsChart"></canvas>
+        </div>
+        <div class="col-md-4 chart-container">
+            <h2>Активные записи</h2>
+            <canvas id="activeRecordsChart"></canvas>
+        </div>
+        <div class="col-md-4 chart-container">
+            <h2>Динамика создания записей</h2>
+            <canvas id="creationDateChart"></canvas>
+        </div>
+    </div>
+
+    <!-- формы для добавления записи -->
+    <h2 class="mt-5">Добавить новую запись</h2>
     <form action="/add/" method="post" class="row g-3">
         <div class="col-md-6">
             <label for="tp_code" class="form-label">TP Code:</label>
@@ -43,6 +72,89 @@
     <div class="mt-4">
         <a href="/tp_dicts_view/" class="btn btn-secondary">Просмотреть все записи</a>
     </div>
+
+    <script>
+        // Загружаем данные для графиков с сервера
+        fetch('/analytics/')
+        .then(response => response.json())
+        .then(data => {
+            // Данные для общего количества записей
+            const totalRecordsCtx = document.getElementById('totalRecordsChart').getContext('2d');
+            const totalRecordsChart = new Chart(totalRecordsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Total Records'],
+                    datasets: [{
+                        label: 'Количество записей',
+                        data: [data.total_records],
+                        backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+                        borderColor: ['rgba(75, 192, 192, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Данные для активных записей
+            const activeRecordsCtx = document.getElementById('activeRecordsChart').getContext('2d');
+            const activeRecordsChart = new Chart(activeRecordsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Active Records', 'Inactive Records'],
+                    datasets: [{
+                        label: 'Активные записи',
+                        data: [data.active_records, data.total_records - data.active_records],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 99, 132, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+
+            // Линейный график по дате создания записей
+            const creationDateCtx = document.getElementById('creationDateChart').getContext('2d');
+            const creationDateChart = new Chart(creationDateCtx, {
+                type: 'line',
+                data: {
+                    labels: data.creation_dates,
+                    datasets: [{
+                        label: 'Созданные записи по дате',
+                        data: data.creation_dates.map((_, index) => index + 1), // Условные данные для роста
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

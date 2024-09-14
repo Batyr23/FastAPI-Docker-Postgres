@@ -72,3 +72,21 @@ async def update_tp_dict_view(
     )
     crud.update_tp_dict(db=db, tp_code=tp_code, tp_dict=tp_dict_data)
     return RedirectResponse("/tp_dicts_view", status_code=303)
+
+
+# Adding visualizations
+
+@app.get("/analytics/")
+async def get_analytics(db: Session = Depends(database.get_db)):
+    total_records = db.query(models.TpDict).count()
+    active_records = db.query(models.TpDict).filter(models.TpDict.tp_status == "active").count()
+    
+    # Получаем данные для линейного графика по дате создания записей
+    records_by_date = db.query(models.TpDict.created_at).all()
+    dates = [record.created_at.strftime('%Y-%m-%d') for record in records_by_date]
+    
+    return {
+        "total_records": total_records,
+        "active_records": active_records,
+        "creation_dates": dates
+    }
