@@ -90,3 +90,93 @@ async def get_analytics(db: Session = Depends(database.get_db)):
         "active_records": active_records,
         "creation_dates": dates
     }
+
+#---------------------------------------------------------------------------------------
+# CRUD для клиентов
+
+# Создание нового клиента
+@app.post("/customers/", response_model=schemas.CustomerOut)
+def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(database.get_db)):
+    return crud.create_customer(db=db, customer=customer)
+
+# Получение списка клиентов
+@app.get("/customers/", response_model=list[schemas.CustomerOut])
+def read_customers(skip: int = 0, limit: int = 10, db: Session = Depends(database.get_db)):
+    return crud.get_customers(db, skip=skip, limit=limit)
+
+# Получение клиента по ID
+@app.get("/customers/{customer_id}", response_model=schemas.CustomerOut)
+def read_customer(customer_id: int, db: Session = Depends(database.get_db)):
+    db_customer = crud.get_customer(db=db, customer_id=customer_id)
+    if db_customer is None:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return db_customer
+
+# Обновление клиента
+@app.put("/customers/{customer_id}", response_model=schemas.CustomerOut)
+def update_customer(customer_id: int, customer: schemas.CustomerUpdate, db: Session = Depends(database.get_db)):
+    return crud.update_customer(db=db, customer_id=customer_id, customer=customer)
+
+# Удаление клиента
+@app.delete("/customers/{customer_id}", response_model=schemas.CustomerOut)
+def delete_customer(customer_id: int, db: Session = Depends(database.get_db)):
+    return crud.delete_customer(db=db, customer_id=customer_id)
+
+# ----- x-application-web interface
+
+# Отображение страницы с клиентами и форма для добавления клиента
+# Маршрут для отображения клиентов
+
+# Просмотр всех клиентов
+@app.get("/customers_view/")
+async def customers_view(request: Request, db: Session = Depends(database.get_db)):
+    customers = crud.get_customers(db)
+    return templates.TemplateResponse("customers.html", {"request": request, "customers": customers})
+
+# Добавление нового клиента
+@app.post("/add_customer/")
+async def add_customer(
+    request: Request,
+    name: str = Form(...),
+    phone_number: str = Form(...),
+    email: str = Form(None),
+    address: str = Form(None),
+    db: Session = Depends(database.get_db)
+):
+    customer_data = schemas.CustomerCreate(
+        name=name, phone_number=phone_number, email=email, address=address
+    )
+    crud.create_customer(db=db, customer=customer_data)
+    return RedirectResponse("/customers_view/", status_code=303)
+
+# Удаление клиента
+@app.post("/delete_customer/{customer_id}")
+async def delete_customer_view(customer_id: int, db: Session = Depends(database.get_db)):
+    crud.delete_customer(db=db, customer_id=customer_id)
+    return RedirectResponse("/customers_view/", status_code=303)
+
+# Форма для редактирования клиента
+@app.get("/edit_customer/{customer_id}")
+async def edit_customer_view(customer_id: int, request: Request, db: Session = Depends(database.get_db)):
+    customer = crud.get_customer(db=db, customer_id=customer_id)
+    if not customer:
+        return RedirectResponse("/customers_view/", status_code=404)
+    return templates.TemplateResponse("edit_customer.html", {"request": request, "customer": customer})
+
+# Обработка формы для редактирования клиента
+@app.post("/edit_customer/{customer_id}")
+async def update_customer_view(
+    customer_id: int,
+    request: Request,
+    name: str = Form(...),
+    phone_number: str = Form(...),
+    email: str = Form(None),
+    address: str = Form(None),
+    db: Session = Depends(database.get_db)
+):
+    customer_data = schemas.CustomerUpdate(
+        name=name, phone_number=phone_number, email=email, address=address
+    )
+    crud.update_customer(db=db, customer_id=customer_id, customer=customer_data)
+    return RedirectResponse("/customers_view/", status_code=303)
+

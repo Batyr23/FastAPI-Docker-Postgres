@@ -16,3 +16,15 @@ class TpDict(Base):
     # log data
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
+
+
+class Customer(Base):
+    __tablename__ = 'customers'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    phone_number = Column(String, unique=True, nullable=False)
+    email = Column(String, unique=True, nullable=True)
+    address = Column(String, nullable=True)
+    registration_date = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)

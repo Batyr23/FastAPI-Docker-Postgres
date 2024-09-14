@@ -18,9 +18,9 @@
     </style>
 </head>
 <body class="container py-5">
-    <h1 class="mb-4">Аналитика записей в TpDict</h1>
+    <h1 class="mb-4">Аналитика записей Тарифных Планов</h1>
 
-    <!-- Здесь будут отображаться графики -->
+    <!-- Графики -->
     <div class="row">
         <div class="col-md-4 chart-container">
             <h2>Общее количество записей</h2>
@@ -36,7 +36,7 @@
         </div>
     </div>
 
-    <!-- формы для добавления записи -->
+    <!-- Форма для добавления новой записи -->
     <h2 class="mt-5">Добавить новую запись</h2>
     <form action="/add/" method="post" class="row g-3">
         <div class="col-md-6">
@@ -69,8 +69,10 @@
         </div>
     </form>
 
+    <!-- Кнопки навигации -->
     <div class="mt-4">
         <a href="/tp_dicts_view/" class="btn btn-secondary">Просмотреть все записи</a>
+        <a href="/customers_view/" class="btn btn-success">Перейти к клиентам</a> <!-- Добавляем кнопку перехода к клиентам -->
     </div>
 
     <script>

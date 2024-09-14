@@ -27,3 +27,29 @@ class TpDictOut(TpDictBase):
 
     class Config:
         orm_mode = True
+
+#----------------------------------------------------------------------
+# Базовая схема клиента
+
+class CustomerBase(BaseModel):
+    name: str
+    phone_number: str
+    email: Optional[str] = None
+    address: Optional[str] = None
+
+# Схема для создания нового клиента
+class CustomerCreate(CustomerBase):
+    pass
+
+# Схема для обновления клиента
+class CustomerUpdate(CustomerBase):
+    pass
+
+# Схема для возврата клиента
+class CustomerOut(CustomerBase):
+    id: int
+    registration_date: Optional[str]  # Добавьте соответствующие поля
+    is_active: Optional[bool]
+
+    class Config:
+        orm_mode = True
